@@ -1,5 +1,12 @@
-// Guitar string frequencies in Hz (Standard Tuning EADGBE)
-const frequencies = [82.41, 110.00, 146.83, 196.00, 246.94, 329.63];
+// Guitar string frequencies in Hz and corresponding note names (Standard Tuning E A D G B E)
+const notes = [
+    { name: "Low E", frequency: 82.41 },
+    { name: "A", frequency: 110.00 },
+    { name: "D", frequency: 146.83 },
+    { name: "G", frequency: 196.00 },
+    { name: "B", frequency: 246.94 },
+    { name: "High E", frequency: 329.63 }
+];
 
 const startButton = document.getElementById('start-button');
 const noteDisplay = document.getElementById('note-display');
@@ -20,11 +27,11 @@ startButton.addEventListener('click', async () => {
             let maxVal = Math.max(...dataArray);
             let detectedFreq = (maxVal / 255) * 500;  // Simplified frequency estimation
 
-            let closest = frequencies.reduce((prev, curr) => 
-                Math.abs(curr - detectedFreq) < Math.abs(prev - detectedFreq) ? curr : prev
+            let closestNote = notes.reduce((prev, curr) => 
+                Math.abs(curr.frequency - detectedFreq) < Math.abs(prev.frequency - detectedFreq) ? curr : prev
             );
 
-            noteDisplay.textContent = `Detected: ${detectedFreq.toFixed(2)} Hz (Closest: ${closest} Hz)`;
+            noteDisplay.textContent = `Detected: ${detectedFreq.toFixed(2)} Hz (Closest: ${closestNote.name} - ${closestNote.frequency} Hz)`;
             requestAnimationFrame(detectPitch);
         }
         
