@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Tuner Meter</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        .meter {
+            position: relative;
+            width: 300px;
+            height: 150px;
+            border-top-left-radius: 150px;
+            border-top-right-radius: 150px;
+            background: #fff;
+            border: 5px solid #333;
+            overflow: hidden;
+        }
+        .needle {
+            position: absolute;
+            width: 4px;
+            height: 80px;
+            background: black;
+            left: 50%;
+            bottom: 0;
+            transform-origin: bottom;
+            transform: rotate(0deg);
+            transition: transform 0.2s ease-out;
+        }
+        .scale {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 10px;
+        }
+        .note-label {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            position: absolute;
+            top: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guitar Tuner</h1>
+    <div class="meter">
+        <div class="needle" id="needle"></div>
+        <div class="scale">A2</div>
+        <div class="note-label">
+            <span>G2#</span>
+            <span>A2#</span>
+        </div>
+    </div>
+    <button id="start-button">Start Tuning</button>
+    <p id="note-display">Play a string...</p>
+    <script>
+        const needle = document.getElementById("needle");
+        const noteDisplay = document.getElementById("note-display");
+        const startButton = document.getElementById("start-button");
+        
+        const notes = [
+            { name: "Low E", frequency: 82.41 },
+            { name: "A", frequency: 110.00 },
+            { name: "D", frequency: 146.83 },
+            { name: "G", frequency: 196.00 },
+            { name: "B", frequency: 246.94 },
+            { name: "High E", frequency: 329.63 }
+        ];
+        
+        startButton.addEventListener("click", async () => {
+            if (navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const analyser = audioContext.createAnalyser();
+                const microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                const dataArray = new Uint8Array(analyser.fftSize);
+                
+                function detectPitch() {
+                    analyser.getByteTimeDomainData(dataArray);
+                    let maxVal = Math.max(...dataArray);
+                    let detectedFreq = (maxVal / 255) * 500;
+                    let closestNote = notes.reduce((prev, curr) =>
+                        Math.abs(curr.frequency - detectedFreq) < Math.abs(prev.frequency - detectedFreq) ? curr : prev
+                    );
+                    
+                    let deviation = (detectedFreq - closestNote.frequency) / closestNote.frequency * 50;
+                    needle.style.transform = `rotate(${deviation}deg)`;
+                    noteDisplay.textContent = `Detected: ${detectedFreq.toFixed(2)} Hz (Closest: ${closestNote.name})`;
+                    requestAnimationFrame(detectPitch);
+                }
+                detectPitch();
+            }
+        });
+    </script>
+</body>
+</html>
