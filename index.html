@@ -40,6 +40,8 @@
             width: 100%;
             text-align: center;
             top: 10px;
+            font-size: 20px;
+            font-weight: bold;
         }
         .note-label {
             display: flex;
@@ -47,6 +49,7 @@
             width: 100%;
             position: absolute;
             top: 100px;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -54,10 +57,10 @@
     <h1>Guitar Tuner</h1>
     <div class="meter">
         <div class="needle" id="needle"></div>
-        <div class="scale">A2</div>
+        <div class="scale" id="note-name">A2</div>
         <div class="note-label">
-            <span>G2#</span>
-            <span>A2#</span>
+            <span id="left-note">G2#</span>
+            <span id="right-note">A2#</span>
         </div>
     </div>
     <button id="start-button">Start Tuning</button>
@@ -66,14 +69,24 @@
         const needle = document.getElementById("needle");
         const noteDisplay = document.getElementById("note-display");
         const startButton = document.getElementById("start-button");
+        const noteName = document.getElementById("note-name");
+        const leftNote = document.getElementById("left-note");
+        const rightNote = document.getElementById("right-note");
         
         const notes = [
-            { name: "Low E", frequency: 82.41 },
-            { name: "A", frequency: 110.00 },
-            { name: "D", frequency: 146.83 },
-            { name: "G", frequency: 196.00 },
-            { name: "B", frequency: 246.94 },
-            { name: "High E", frequency: 329.63 }
+            { name: "E2", frequency: 82.41 },
+            { name: "F2", frequency: 87.31 },
+            { name: "F#2", frequency: 92.50 },
+            { name: "G2", frequency: 98.00 },
+            { name: "G#2", frequency: 103.83 },
+            { name: "A2", frequency: 110.00 },
+            { name: "A#2", frequency: 116.54 },
+            { name: "B2", frequency: 123.47 },
+            { name: "C3", frequency: 130.81 },
+            { name: "C#3", frequency: 138.59 },
+            { name: "D3", frequency: 146.83 },
+            { name: "D#3", frequency: 155.56 },
+            { name: "E3", frequency: 164.81 }
         ];
         
         startButton.addEventListener("click", async () => {
@@ -92,6 +105,14 @@
                     let closestNote = notes.reduce((prev, curr) =>
                         Math.abs(curr.frequency - detectedFreq) < Math.abs(prev.frequency - detectedFreq) ? curr : prev
                     );
+                    
+                    let closestIndex = notes.findIndex(note => note.name === closestNote.name);
+                    let leftIndex = closestIndex > 0 ? closestIndex - 1 : closestIndex;
+                    let rightIndex = closestIndex < notes.length - 1 ? closestIndex + 1 : closestIndex;
+                    
+                    noteName.textContent = closestNote.name;
+                    leftNote.textContent = notes[leftIndex].name;
+                    rightNote.textContent = notes[rightIndex].name;
                     
                     let deviation = (detectedFreq - closestNote.frequency) / closestNote.frequency * 50;
                     needle.style.transform = `rotate(${deviation}deg)`;
